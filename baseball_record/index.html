@@ -2,304 +2,123 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>야구 기록 입력</title>
+  <title>선수 기록 입력 및 관리</title>
   <style>
-    /* 기존 스타일 유지 (생략 가능) */
-    /* 복붙하셔도 되고 필요한 부분만 유지하세요 */
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px 30px;
-      background-color: #f9faff;
+      max-width: 960px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #f4f7fc;
       color: #333;
-      overflow-x: auto;
     }
     h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1a73e8;
-      margin-bottom: 30px;
       text-align: center;
+      color: #1a73e8;
+      margin-bottom: 20px;
     }
-    nav a {
-      display: inline-block;
-      padding: 10px 20px;
-      margin-bottom: 30px;
-      background-color: #1a73e8;
-      color: white;
-      font-weight: 600;
-      border-radius: 6px;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-    }
-    nav a:hover {
-      background-color: #155ab6;
-    }
-    form {
+    .top-bar {
       display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 40px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 25px;
       flex-wrap: wrap;
     }
-    input[type="text"], select {
-      padding: 10px 12px;
+    .top-bar input, .top-bar select {
+      padding: 6px 10px;
       font-size: 1rem;
-      border: 1.5px solid #ccc;
-      border-radius: 6px;
-      transition: border-color 0.3s ease;
-      width: 180px;
-      min-width: 150px;
-    }
-    input[type="text"]:focus, select:focus {
-      border-color: #1a73e8;
-      outline: none;
     }
     button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 6px;
       background-color: #1a73e8;
+      border: none;
       color: white;
+      padding: 7px 15px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-      white-space: nowrap;
+      border-radius: 5px;
+      transition: background-color 0.2s;
     }
     button:hover {
       background-color: #155ab6;
     }
-    .player-list > div {
-      background-color: white;
-      border: 1px solid #ddd;
-      padding: 16px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgb(26 115 232 / 0.15);
+    #playerList > div {
+      border: 1px solid #ccc;
+      padding: 12px;
+      margin-bottom: 18px;
+      background: white;
+      border-radius: 6px;
       overflow-x: auto;
-      max-width: 100%;
     }
-    .player-list h3 {
-      font-weight: 700;
+    #playerList h3 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
       color: #1a73e8;
-      margin-bottom: 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .delete-btn {
-      color: #e53935;
-      font-size: 14px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
+    #playerList h3 button {
       background: none;
       border: none;
+      color: #e53935;
       cursor: pointer;
-    }
-    .delete-btn:hover {
-      background-color: #e5393533;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      min-width: 900px;
+      width: 100%;
+      min-width: 700px;
     }
     th, td {
       border: 1px solid #ddd;
+      padding: 6px 10px;
       text-align: center;
       font-size: 0.9rem;
-      white-space: nowrap;
-      padding: 8px 6px;
-      vertical-align: middle;
+      user-select: none;
     }
     th {
       background-color: #e8f0fe;
       color: #1a73e8;
-      font-weight: 600;
-      user-select: none;
     }
-    td.buttons-cell {
-      padding: 4px 6px;
-    }
-    button.stat-btn {
-      width: 24px;
-      height: 24px;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background-color: #f1f3f4;
+    .buttons-cell button {
+      background: none;
+      border: none;
       cursor: pointer;
-      margin: 0 2px;
-      user-select: none;
-      transition: background-color 0.3s ease;
-    }
-    button.stat-btn:hover {
-      background-color: #cde0fe;
-    }
-    .duel-section {
-      background-color: white;
-      padding: 20px 25px;
-      border-radius: 10px;
-      margin-top: 50px;
-      box-shadow: 0 4px 10px rgb(26 115 232 / 0.1);
-      overflow-x: auto;
-    }
-    .duel-section h2 {
-      color: #1a73e8;
       font-weight: 700;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
-    }
-    .duel-section h3 {
-      margin-bottom: 12px;
-      color: #3c4043;
-      font-weight: 600;
-    }
-    #pitcherSearch, #hitterSearch {
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      border-radius: 6px;
-      border: 1.5px solid #ccc;
       font-size: 1rem;
+      color: #555;
+      padding: 0 3px;
     }
-    #pitcherSearchResults div, #hitterSearchResults div {
-      padding: 6px 8px;
-      margin-bottom: 6px;
-      background-color: #f1f3f4;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    #pitcherSearchResults div:hover, #hitterSearchResults div:hover {
-      background-color: #cde0fe;
-    }
-    #pitcherEditSection, #hitterEditSection {
-      background-color: #f9fbff;
-      border: 1px solid #cde0fe;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-top: 8px;
-    }
-    #pitcherNameDisplay, #hitterNameDisplay {
-      font-weight: 700;
+    .buttons-cell button:hover {
       color: #1a73e8;
-      margin-bottom: 12px;
-    }
-    #pitcherStatsContainer div, #hitterStatsContainer div {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    #pitcherStatsContainer label, #hitterStatsContainer label {
-      min-width: 100px;
-      font-weight: 600;
-      color: #3c4043;
-    }
-    .mvp-section {
-      margin-top: 40px;
-      background:#f0f4ff;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .mvp-section h2 {
-      color:#1a73e8;
-      margin-bottom: 12px;
-    }
-    .mvp-section select {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1.5px solid #ccc;
-      font-size: 1rem;
-      min-width: 240px;
-    }
-    .mvp-section button {
-      margin-left: 12px;
-      padding: 8px 20px;
-      background:#1a73e8;
-      color:#fff;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
-      font-weight: 600;
-    }
-    .mvp-section button:hover {
-      background:#155ab6;
-    }
-    .mvp-message {
-      margin-top: 10px;
-      font-weight: 600;
-      color: #155ab6;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <h1>선수 기록 입력 및 관리</h1>
-  <nav>
-    <a href="records.html">선수 기록 조회 페이지로 이동</a>
-  </nav>
 
-  <form id="addPlayerForm">
+  <h1>선수 기록 입력 및 관리</h1>
+
+  <div class="top-bar">
+    <button id="goToRecordPageBtn">선수 기록 조회 페이지로 이동</button>
     <input type="text" id="playerName" placeholder="선수 이름" required />
-    <select id="playerType">
+    <select id="playerType" required>
       <option value="타자">타자</option>
       <option value="투수">투수</option>
     </select>
     <select id="playerTeam" required>
       <option value="" disabled selected>팀 선택</option>
-      <option value="Leaders">Leaders</option>
       <option value="CSIA">CSIA</option>
+      <option value="Leaders">Leaders</option>
+      <!-- 추가 팀명 필요 시 여기 추가 -->
     </select>
-    <button type="submit">선수 추가</button>
-  </form>
-
-  <div class="player-list" id="playerList"></div>
-
-  <div class="duel-section">
-    <h2>투수-타자 대결 기록 입력</h2>
-    <div style="display:flex; gap: 30px; flex-wrap: wrap;">
-      <div style="flex:1; min-width: 280px;">
-        <h3>투수 선택 및 기록</h3>
-        <input type="text" id="pitcherSearch" placeholder="투수 이름 검색" autocomplete="off" />
-        <div id="pitcherSearchResults"></div>
-        <div id="pitcherEditSection" style="display:none; margin-top:10px;">
-          <div id="pitcherNameDisplay"></div>
-          <div id="pitcherStatsContainer"></div>
-        </div>
-      </div>
-      <div style="flex:1; min-width: 280px;">
-        <h3>타자 선택 및 기록</h3>
-        <input type="text" id="hitterSearch" placeholder="타자 이름 검색" autocomplete="off" />
-        <div id="hitterSearchResults"></div>
-        <div id="hitterEditSection" style="display:none; margin-top:10px;">
-          <div id="hitterNameDisplay"></div>
-          <div id="hitterStatsContainer"></div>
-        </div>
-      </div>
-    </div>
-    <button id="saveDuelBtn" style="margin-top: 20px;">대결 기록 저장</button>
+    <button id="addPlayerBtn">선수 추가</button>
   </div>
 
-  <div class="mvp-section">
-    <h2>MVP 선정</h2>
-    <select id="mvpSelect">
-      <option value="" disabled selected>선수 선택</option>
-    </select>
-    <button id="selectMvpBtn">MVP 선정</button>
-    <p id="mvpMessage" class="mvp-message"></p>
-  </div>
+  <div id="playerList"></div>
 
-  <button id="exportPlayersBtn" style="margin-bottom:20px;">선수 데이터 내보내기 (JSON)</button>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
