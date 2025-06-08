@@ -1,4 +1,3 @@
-
 // DOM 요소
 const goToInputBtn = document.getElementById('goToInputBtn');
 const hitterMenu = document.getElementById('hitterMenu');
@@ -469,3 +468,19 @@ searchInput.addEventListener('input', () => {
   if (!currentSort.column) return;
   renderRanking(currentSort.column, currentSort.asc);
 });
+
+async function addPlayerToSupabase(player) {
+  const insertData = {
+    name: player.name,
+    type: player.type,
+    team: player.team,
+    mvpCount: player.mvpCount || 0,
+    ...player.stats
+  };
+  console.log('Supabase insertData:', insertData);
+  const { error } = await supabase.from('players').insert([insertData]);
+  if (error) {
+    alert('Supabase 저장 오류: ' + error.message);
+    console.error(error);
+  }
+}
