@@ -27,6 +27,16 @@ function renderPlayerList(players) {
     return;
   }
 
+  const hitterStats = [
+    "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
+    "희생플라이", "내야땅볼", "플라이아웃", "타점"
+  ];
+
+  const pitcherStats = [
+    "투구수", "피안타", "피홈런", "자책점", "이닝",
+    "승리", "패배", "홀드", "세이브", "사구"
+  ];
+
   players.forEach((player, idx) => {
     const container = document.createElement('div');
     container.style.border = '1px solid #ccc';
@@ -34,16 +44,7 @@ function renderPlayerList(players) {
     container.style.padding = '10px';
     container.style.overflowX = 'auto';
 
-    // 선수 타입별로 보여줄 스탯 다르게 설정
-    const hitterStats = [
-      "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
-      "희생플라이", "내야땅볼", "플라이아웃", "타점"
-    ];
-    const pitcherStats = [
-      "투구수", "피안타", "피홈런", "자책점", "이닝",
-      "승리", "패배", "홀드", "세이브", "사구"
-    ];
-
+    // 선수 타입에 따라 스탯 키 선택
     const statKeys = player.type === '타자' ? hitterStats : pitcherStats;
 
     let html = `<h3>${player.name} (${player.team} / ${player.type}) <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button></h3>`;
@@ -54,7 +55,7 @@ function renderPlayerList(players) {
     });
     html += '<th>MVP 횟수</th></tr></thead><tbody><tr>';
 
-    // 증감 버튼 행
+    // 스탯 증감 버튼 행
     statKeys.forEach(stat => {
       html += `<td class="buttons-cell">
         <button class="stat-btn" data-idx="${idx}" data-stat="${stat}" data-delta="1">&#x25B2;</button>
@@ -123,8 +124,8 @@ function bindIndexPageEvents() {
         '희생플라이', '내야땅볼', '플라이아웃', '타점'
       ];
       const pitcherStatsHeaders = [
-        '투구수', '삼진', '볼넷', '피안타', '피홈런',
-        '자책점', '이닝', '승리', '패배', '홀드', '세이브', '사구'
+        '투구수', '피안타', '피홈런', '자책점', '이닝',
+        '승리', '패배', '홀드', '세이브', '사구'
       ];
 
       const stats = (type === '타자') ?
