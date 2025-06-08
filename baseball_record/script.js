@@ -359,6 +359,65 @@ function exportPlayersToJson() {
   URL.revokeObjectURL(url);
 }
 
+// Supabase 연결
+const SUPABASE_URL = 'https://knncinmwspqciwutilgp.supabase.co'; // 본인 프로젝트 URL로 변경
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubmNpbm13c3BxY2l3dXRpbGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzMzk1MzIsImV4cCI6MjA2NDkxNTUzMn0.nswNMUmLlaY1QgPhnCoHH5hVUkXjSgtoUYorHtRoQW4'; // 본인 프로젝트 anon key로 변경
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 선수 데이터 불러오기 (Supabase)
+async function loadPlayersFromSupabase() {
+  const { data, error } = await supabase.from('players').select('*');
+  if (error) {
+    console.error('불러오기 오류:', error);
+    return [];
+  }
+  return data;
+}
+
+// 선수 데이터 저장 (전체 덮어쓰기, 기존 데이터 삭제 후 삽입)
+async function savePlayersToSupabase(players) {
+  // 기존 데이터 삭제
+  await supabase.from('players').delete().neq('id', 0);
+  // 새 데이터 삽입
+  const { error } = await supabase.from('players').insert(players);
+  if (error) {
+    console.error('저장 오류:', error);
+  }
+}
+
+// 선수 데이터 저장 함수 예시
+function savePlayers(players) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+  exportPlayersToJson(); // 저장할 때마다 자동으로 JSON 파일 다운로드
+}
+
+// 선수 추가 예시
+async function addPlayer(newPlayer) {
+  const players = await loadPlayersFromSupabase();
+  players.push(newPlayer);
+  await savePlayersToSupabase(players);
+}
+
+// 선수 기록 수정 예시
+function updatePlayer(updatedPlayer) {
+  let players = loadPlayers();
+  players = players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
+  savePlayers(players); // 저장 + 자동 다운로드
+}
+
+// 선수 삭제 예시
+function deletePlayer(playerId) {
+  let players = loadPlayers();
+  players = players.filter(p => p.id !== playerId);
+  savePlayers(players); // 저장 + 자동 다운로드
+}
+
+// 선수 데이터 불러오기 및 화면 반영
+async function loadAndRenderPlayers() {
+  const players = await loadPlayersFromSupabase();
+  // players로 화면 렌더링 함수 호출
+}
+
 document.getElementById('exportPlayersBtn').addEventListener('click', exportPlayersToJson);
 
 // 초기 로딩 시 최근 MVP 정보 표시 및 데이터 렌더링
