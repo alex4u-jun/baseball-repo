@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>선수 상세 정보</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px 30px;
+      background-color: #f9faff;
+      color: #333;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #1a73e8;
+      text-align: center;
+    }
+
+    #backBtn {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background-color: #1a73e8;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #backBtn:hover {
+      background-color: #155ab6;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #1a73e8;
+      padding: 6px 12px;
+      text-align: center;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f0f4ff;
+      color: #1a73e8;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px 15px;
+      }
+      th, td {
+        font-size: 0.85rem;
+        padding: 5px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="backBtn">← 뒤로가기</button>
+
+  <h1 id="playerName">선수명 (포지션)</h1>
+
+  <div class="table-wrapper">
+    <table id="statsTable">
+      <tbody id="statsTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    document.getElementById('backBtn').addEventListener('click', () => {
+      history.back();
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const playerName = urlParams.get('name');
+    const playerType = urlParams.get('type');
+
+    const playerNameElem = document.getElementById('playerName');
+    const statsTableBody = document.getElementById('statsTableBody');
+
+    function loadPlayers() {
+      const data = localStorage.getItem('playersData');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function calculateAVG(player) {
+      const H = (player.stats['1루타']||0) + (player.stats['2루타']||0) + (player.stats['3루타']||0) + (player.stats['홈런']||0);
+      const AB = H + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
+      if (AB === 0) return 0;
+      return H / AB;
+    }
+
+    function calculateOBP(player) {
+      const H = (player.stats['1루타']||0) + (player.stats['2루타']||0) + (player.stats['3루타']||0) + (player.stats['홈런']||0);
+      const BB = player.stats['볼넷']||0;
+      const HBP = 0;
+      const AB = H + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
+      const SF = player.stats['희생플라이']||0;
+      const denom = AB + BB + HBP + SF;
+      if (denom === 0) return 0;
+      return (H + BB + HBP) / denom;
+    }
+
+    function calculateSLG(player) {
+      const doubles = player.stats['2루타']||0;
+      const triples = player.stats['3루타']||0;
+      const HR = player.stats['홈런']||0;
+      const AB = doubles + triples + HR + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
+      if (AB === 0) return 0;
+      const totalBases = 2*doubles + 3*triples + 4*HR;
+      return totalBases / AB;
+    }
+
+    function calculateOPS(player) {
+      return calculateOBP(player) + calculateSLG(player);
+    }
+
+    function calculateERA(player) {
+      const ER = player.stats['자책점']||0;
+      const IP = player.stats['이닝']||0;
+      if (IP === 0) return 0;
+      return (ER * 9) / IP;
+    }
+
+    function calculateWHIP(player) {
+      const BB = player.stats['볼넷']||0;
+      const H = player.stats['피안타']||0;
+      const IP = player.stats['이닝']||0;
+      if (IP === 0) return 0;
+      return (BB + H) / IP;
+    }
+
+    function calculateWinRate(player) {
+      const W = player.stats['승리']||0;
+      const L = player.stats['패배']||0;
+      const total = W + L;
+      if (total === 0) return 0;
+      return W / total;
+    }
+
+    const players = loadPlayers();
+    const player = players.find(p => p.name === playerName && p.type === playerType);
+
+    if (!player) {
+      playerNameElem.textContent = '선수 정보를 찾을 수 없습니다.';
+      statsTableBody.innerHTML = '';
+    } else {
+      playerNameElem.textContent = `${player.name} (${player.type})`;
+
+      statsTableBody.innerHTML = '';
+
+      let statHeaders, statValues;
+
+      if (player.type === '투수') {
+        statHeaders = ['투구수', '삼진', '볼넷', '사구', '피안타', '피홈런', '자책점', '이닝', '승리', '패배', '홀드', '세이브', 'ERA', 'WHIP', '승률', 'MVP 횟수'];
+        statValues = [
+          player.stats['투구수'] || 0,
+          player.stats['삼진'] || 0,
+          player.stats['볼넷'] || 0,
+          player.stats['사구'] || 0,
+          player.stats['피안타'] || 0,
+          player.stats['피홈런'] || 0,
+          player.stats['자책점'] || 0,
+          player.stats['이닝'] || 0,
+          player.stats['승리'] || 0,
+          player.stats['패배'] || 0,
+          player.stats['홀드'] || 0,
+          player.stats['세이브'] || 0,
+          calculateERA(player).toFixed(2),
+          calculateWHIP(player).toFixed(3),
+          (calculateWinRate(player) * 100).toFixed(1) + '%',
+          player.mvpCount || 0
+        ];
+      } else {
+        statHeaders = ['1루타', '2루타', '3루타', '홈런', '삼진', '볼넷', '희생플라이', '내야땅볼', '플라이아웃', '타점', '타율', '출루율', '장타율', 'OPS', 'MVP 횟수'];
+        statValues = [
+          player.stats['1루타'] || 0,
+          player.stats['2루타'] || 0,
+          player.stats['3루타'] || 0,
+          player.stats['홈런'] || 0,
+          player.stats['삼진'] || 0,
+          player.stats['볼넷'] || 0,
+          player.stats['희생플라이'] || 0,
+          player.stats['내야땅볼'] || 0,
+          player.stats['플라이아웃'] || 0,
+          player.stats['타점'] || 0,
+          calculateAVG(player).toFixed(3),
+          calculateOBP(player).toFixed(3),
+          calculateSLG(player).toFixed(3),
+          calculateOPS(player).toFixed(3),
+          player.mvpCount || 0
+        ];
+      }
+
+      // 각 헤더와 값들을 각각 tr로 세로 표시
+      for (let i = 0; i < statHeaders.length; i++) {
+        const tr = document.createElement('tr');
+
+        const th = document.createElement('th');
+        th.textContent = statHeaders[i];
+        tr.appendChild(th);
+
+        const td = document.createElement('td');
+        td.textContent = statValues[i];
+        tr.appendChild(td);
+
+        statsTableBody.appendChild(tr);
+      }
+    }
+  </script>
+</body>
+</html>
