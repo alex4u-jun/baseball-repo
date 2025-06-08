@@ -27,12 +27,22 @@ function loadPlayers() {
 }
 
 // 최근 MVP 불러오기 및 표시
-function loadRecentMvp() {
-  const mvpData = localStorage.getItem('lastMvp');
-  if (mvpData) {
-    const mvp = JSON.parse(mvpData);
-    const dateStr = new Date(mvp.date).toLocaleDateString();
-    // 이미지 + 텍스트 스타일
+async function loadRecentMvp() {
+  const { data, error } = await supabase
+    .from('players') // Assuming you have a 'players' table
+    .select('*')
+    .order('mvpDate', { ascending: false }) // Assuming you have a 'mvpDate' column
+    .limit(1);
+
+  if (error) {
+    console.error('MVP 불러오기 오류:', error);
+    recentMvpInfo.textContent = 'MVP 정보를 불러오는 데 실패했습니다.';
+    return;
+  }
+
+  if (data && data.length > 0) {
+    const mvp = data[0];
+    const dateStr = new Date(mvp.mvpDate).toLocaleDateString(); // Assuming you have a 'mvpDate' column
     recentMvpInfo.innerHTML = `
       <img src="mvp_logo.png" alt="MVP" style="height:40px; margin-right:10px; vertical-align:middle;">
       <span>${mvp.name} (${mvp.team} / ${mvp.type}) - 선정일: ${dateStr}</span>
@@ -385,11 +395,6 @@ async function savePlayersToSupabase(players) {
   }
 }
 
-// 선수 데이터 저장 함수 예시
-function savePlayers(players) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
-  exportPlayersToJson(); // 저장할 때마다 자동으로 JSON 파일 다운로드
-}
 
 // 선수 추가 예시
 async function addPlayer(newPlayer) {
