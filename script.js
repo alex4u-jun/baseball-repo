@@ -384,23 +384,14 @@ async function loadPlayersFromSupabase() {
   return data;
 }
 
-// 선수 데이터 저장 (전체 덮어쓰기, 기존 데이터 삭제 후 삽입)
-async function savePlayersToSupabase(players) {
-  // 기존 데이터 삭제
-  await supabase.from('players').delete().neq('id', 0);
-  // 새 데이터 삽입
-  const { error } = await supabase.from('players').insert(players);
-  if (error) {
-    console.error('저장 오류:', error);
-  }
-}
 
 
 // 선수 추가 예시
 async function addPlayer(newPlayer) {
-  const players = await loadPlayersFromSupabase();
-  players.push(newPlayer);
-  await savePlayersToSupabase(players);
+  const { error } = await supabase.from('players').insert([newPlayer]);
+  if (error) {
+    console.error('선수 추가 오류:', error);
+  }
 }
 
 // 선수 기록 수정 예시
