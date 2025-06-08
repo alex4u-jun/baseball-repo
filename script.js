@@ -41,7 +41,7 @@ function renderPlayerList(players) {
     container.style.padding = '10px';
     container.style.overflowX = 'auto';
 
-    let html = `<h3>${player.name} (${player.team} / ${player.type}) <button class="delete-btn" data-idx="${idx}">삭제</button></h3>`;
+    let html = `<h3>${player.name} (${player.team} / ${player.type}) <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button></h3>`;
     html += '<table><thead><tr>';
 
     statKeys.forEach(stat => {
@@ -49,6 +49,7 @@ function renderPlayerList(players) {
     });
     html += '<th>MVP 횟수</th></tr></thead><tbody><tr>';
 
+    // 스탯 증감 버튼 행
     statKeys.forEach(stat => {
       html += `<td class="buttons-cell">
         <button class="stat-btn" data-idx="${idx}" data-stat="${stat}" data-delta="1">&#x25B2;</button>
@@ -61,6 +62,7 @@ function renderPlayerList(players) {
       <button class="stat-btn" data-idx="${idx}" data-stat="mvpcount" data-delta="-1">&#x25BC;</button>
     </td></tr><tr>`;
 
+    // 스탯 값 행
     statKeys.forEach(stat => {
       html += `<td>${player[stat] || 0}</td>`;
     });
