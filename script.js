@@ -15,7 +15,7 @@ async function loadPlayersFromSupabase() {
   return data || [];
 }
 
-// index.html용: 선수 리스트 렌더링
+// index.html: 선수 리스트 렌더링
 function renderPlayerList(players) {
   const playerListDiv = document.getElementById('playerList');
   if (!playerListDiv) return;
@@ -27,7 +27,6 @@ function renderPlayerList(players) {
     return;
   }
 
-  // 표시할 스탯 컬럼
   const statKeys = [
     "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
     "희생플라이", "내야땅볼", "플라이아웃", "타점",
@@ -90,8 +89,8 @@ function updateMvpSelect(players) {
   });
 }
 
-// index.html 이벤트 바인딩
-function bindIndexPageEvents(players) {
+// index.html: 이벤트 바인딩
+function bindIndexPageEvents() {
   const addPlayerForm = document.getElementById('addPlayerForm');
   if (addPlayerForm) {
     addPlayerForm.addEventListener('submit', async e => {
@@ -113,6 +112,7 @@ function bindIndexPageEvents(players) {
         return;
       }
 
+      // 기본 스탯 초기화
       const hitterStatsHeaders = [
         '1루타', '2루타', '3루타', '홈런', '삼진', '볼넷',
         '희생플라이', '내야땅볼', '플라이아웃', '타점'
@@ -128,21 +128,22 @@ function bindIndexPageEvents(players) {
 
       const newPlayer = { name, type, team, ...stats, mvpcount: 0 };
 
-      // Supabase에 추가
-      const { error } = await supabase.from('players').insert([newPlayer]);
+      // Supabase에 선수 추가
+      const { data, error } = await supabase.from('players').insert([newPlayer]);
       if (error) {
         alert('선수 추가 중 오류 발생: ' + error.message);
         console.error(error);
         return;
       }
 
-      players.push(newPlayer);
+      // 데이터 다시 불러오기 및 렌더링
+      players = await loadPlayersFromSupabase();
       renderPlayerList(players);
       addPlayerForm.reset();
     });
   }
 
-  // 선수 리스트 클릭 이벤트 처리 (삭제, 스탯 증감)
+  // 선수 리스트 클릭 이벤트 (삭제, 스탯 증감)
   const playerListDiv = document.getElementById('playerList');
   if (playerListDiv) {
     playerListDiv.addEventListener('click', async e => {
@@ -154,15 +155,20 @@ function bindIndexPageEvents(players) {
         if (isNaN(idx)) return;
         if (!confirm(`${players[idx].name} 선수를 삭제하시겠습니까?`)) return;
 
-        // Supabase에서 삭제 (id 컬럼 필요)
-        const { error } = await supabase.from('players').delete().eq('id', players[idx].id);
+        const playerToDelete = players[idx];
+        if (!playerToDelete.id) {
+          alert('삭제할 선수의 ID가 없습니다.');
+          return;
+        }
+
+        const { error } = await supabase.from('players').delete().eq('id', playerToDelete.id);
         if (error) {
           alert('삭제 중 오류 발생: ' + error.message);
           console.error(error);
           return;
         }
 
-        players.splice(idx, 1);
+        players = await loadPlayersFromSupabase();
         renderPlayerList(players);
 
       } else if (target.classList.contains('stat-btn')) {
@@ -171,31 +177,29 @@ function bindIndexPageEvents(players) {
         const delta = parseInt(target.dataset.delta);
         if (isNaN(idx) || !stat || isNaN(delta)) return;
 
-        let newVal;
-        if (stat === 'mvpcount') {
-          newVal = (players[idx].mvpcount || 0) + delta;
-          if (newVal < 0) return;
-          players[idx].mvpcount = newVal;
-        } else {
-          newVal = (players[idx][stat] || 0) + delta;
-          if (newVal < 0) return;
-          players[idx][stat] = newVal;
+        const playerToUpdate = players[idx];
+        const newValue = (playerToUpdate[stat] || 0) + delta;
+        if (newValue < 0) return;
+
+        if (!playerToUpdate.id) {
+          alert('수정할 선수의 ID가 없습니다.');
+          return;
         }
 
-        // Supabase 업데이트
-        const { error } = await supabase.from('players').update({ [stat]: newVal }).eq('id', players[idx].id);
+        const { error } = await supabase.from('players').update({ [stat]: newValue }).eq('id', playerToUpdate.id);
         if (error) {
           alert('수정 중 오류 발생: ' + error.message);
           console.error(error);
           return;
         }
 
+        players[idx][stat] = newValue;
         renderPlayerList(players);
       }
     });
   }
 
-  // MVP 선정 버튼 클릭 이벤트
+  // MVP 선정 버튼 클릭
   const selectMvpBtn = document.getElementById('selectMvpBtn');
   if (selectMvpBtn) {
     selectMvpBtn.addEventListener('click', () => {
@@ -210,7 +214,7 @@ function bindIndexPageEvents(players) {
 
       const newMvpCount = (players[idx].mvpcount || 0) + 1;
 
-      // Supabase 업데이트
+      // Supabase에 MVP count 업데이트
       supabase.from('players').update({ mvpcount: newMvpCount }).eq('id', players[idx].id)
         .then(({ error }) => {
           if (error) {
@@ -227,7 +231,7 @@ function bindIndexPageEvents(players) {
     });
   }
 
-  // 선수 데이터 내보내기 버튼 이벤트
+  // 선수 데이터 내보내기 버튼 클릭
   const exportBtn = document.getElementById('exportPlayersBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
@@ -243,7 +247,7 @@ function bindIndexPageEvents(players) {
   }
 }
 
-// records.html용: 팀 통계 계산 및 렌더링
+// records.html: 팀 통계 계산 및 렌더링
 async function calculateTeamStats() {
   const teamStatsSection = document.getElementById('teamStatsSection');
   const teamStatsTableBody = document.querySelector('#teamStatsTable tbody');
@@ -312,7 +316,7 @@ async function calculateTeamStats() {
   teamStatsSection.style.display = Object.keys(teams).length > 0 ? 'block' : 'none';
 }
 
-// MVP 순위 렌더링
+// records.html: MVP 순위 렌더링
 async function renderMvpRanking() {
   const mvpRankingSection = document.getElementById('mvpRankingSection');
   const mvpRankingTableBody = document.querySelector('#mvpRankingTable tbody');
@@ -497,7 +501,7 @@ function createRankingTable(players, stat, currentSort) {
   return table;
 }
 
-// 초기 실행 및 이벤트 바인딩
+// DOMContentLoaded 이벤트 핸들러
 document.addEventListener('DOMContentLoaded', async () => {
   players = await loadPlayersFromSupabase();
 
