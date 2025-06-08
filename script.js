@@ -1,4 +1,3 @@
-const STORAGE_KEY = 'playersData';
 
 // DOM 요소
 const goToInputBtn = document.getElementById('goToInputBtn');
@@ -20,11 +19,6 @@ const pitcherStatsForRanking = ['승리', '세이브', '홀드', '삼진', 'ERA'
 
 let currentSort = { column: null, asc: true };
 
-// 로컬스토리지에서 선수 데이터 불러오기
-function loadPlayers() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
-}
 
 // 최근 MVP 불러오기 및 표시
 async function loadRecentMvp() {
@@ -249,16 +243,25 @@ function renderRanking(stat, asc = true) {
 }
 
 // MVP 순위 테이블 생성
-function renderMvpRanking() {
-  const players = loadPlayers().filter(p => p.mvpCount && p.mvpCount > 0);
-  if (players.length === 0) {
+async function renderMvpRanking() {
+  const { data: players, error } = await supabase
+    .from('players')
+    .select('*')
+    .filter('mvpCount', 'gt', 0)
+    .order('mvpCount', { ascending: false });
+
+  if (error) {
+    console.error('MVP 순위 불러오기 오류:', error);
     mvpRankingSection.style.display = 'none';
     return;
   }
+
+  if (!players || players.length === 0) {
+    mvpRankingSection.style.display = 'none';
+    return;
+  }
+
   mvpRankingSection.style.display = 'block';
-
-  players.sort((a, b) => b.mvpCount - a.mvpCount);
-
   mvpRankingTableBody.innerHTML = '';
 
   players.forEach((p, idx) => {
@@ -353,21 +356,6 @@ function calculateTeamStats() {
   teamStatsSection.style.display = Object.keys(teams).length > 0 ? 'block' : 'none';
 }
 
-// 선수 데이터 JSON 파일로 내보내기
-function exportPlayersToJson() {
-  const players = loadPlayers();
-  const dataStr = JSON.stringify(players, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'players.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 // Supabase 연결
 const SUPABASE_URL = 'https://knncinmwspqciwutilgp.supabase.co'; // 본인 프로젝트 URL로 변경
