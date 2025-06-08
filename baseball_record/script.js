@@ -28,7 +28,7 @@ function renderPlayerList(players) {
   }
 
   players.forEach((player, idx) => {
-    // 선수 타입별 스탯 분리
+    // 선수 타입별 보여줄 스탯 분리
     const hitterStats = [
       "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
       "희생플라이", "내야땅볼", "플라이아웃", "타점"
@@ -37,6 +37,7 @@ function renderPlayerList(players) {
       "투구수", "피안타", "피홈런", "자책점", "이닝",
       "승리", "패배", "홀드", "세이브", "사구"
     ];
+    // 선수 타입에 맞게 필드 선택
     const statKeys = (player.type === '타자') ? hitterStats : pitcherStats;
 
     const container = document.createElement('div');
@@ -48,27 +49,27 @@ function renderPlayerList(players) {
     let html = `<h3>${player.name} (${player.team} / ${player.type}) 
       <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button>
     </h3>`;
-    html += '<table><thead><tr>';
 
+    html += '<table><thead><tr>';
     statKeys.forEach(stat => {
       html += `<th>${stat}</th>`;
     });
     html += '<th>MVP 횟수</th></tr></thead><tbody><tr>';
 
-    // 스탯 증감 버튼 행
+    // 증감 버튼 행
     statKeys.forEach(stat => {
-      html += `<td class="buttons-cell">
+      html += `<td>
         <button class="stat-btn" data-idx="${idx}" data-stat="${stat}" data-delta="1">&#x25B2;</button>
         <button class="stat-btn" data-idx="${idx}" data-stat="${stat}" data-delta="-1">&#x25BC;</button>
       </td>`;
     });
 
-    html += `<td class="buttons-cell">
+    html += `<td>
       <button class="stat-btn" data-idx="${idx}" data-stat="mvpCount" data-delta="1">&#x25B2;</button>
       <button class="stat-btn" data-idx="${idx}" data-stat="mvpCount" data-delta="-1">&#x25BC;</button>
     </td></tr><tr>`;
 
-    // 스탯 값 행
+    // 값 행
     statKeys.forEach(stat => {
       html += `<td>${player[stat] || 0}</td>`;
     });
@@ -118,6 +119,7 @@ function bindIndexPageEvents() {
         return;
       }
 
+      // 기본 스탯 초기화
       const hitterStatsHeaders = [
         '1루타', '2루타', '3루타', '홈런', '삼진', '볼넷',
         '희생플라이', '내야땅볼', '플라이아웃', '타점'
@@ -134,13 +136,14 @@ function bindIndexPageEvents() {
       const newPlayer = { name, type, team, ...stats, mvpCount: 0 };
 
       // Supabase에 선수 추가
-      const { error } = await supabase.from('players').insert([newPlayer]);
+      const { data, error } = await supabase.from('players').insert([newPlayer]);
       if (error) {
         alert('선수 추가 중 오류 발생: ' + error.message);
         console.error(error);
         return;
       }
 
+      // 데이터 다시 불러오기 및 렌더링
       players = await loadPlayersFromSupabase();
       renderPlayerList(players);
       addPlayerForm.reset();
@@ -251,7 +254,7 @@ function bindIndexPageEvents() {
   }
 }
 
-// 초기 실행 및 이벤트 바인딩
+// DOMContentLoaded 이벤트 핸들러
 document.addEventListener('DOMContentLoaded', async () => {
   players = await loadPlayersFromSupabase();
   renderPlayerList(players);
