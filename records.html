@@ -2,10 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>선수 기록 조회 및 분야별 순위</title>
+  <title>야구 기록 조회 및 순위</title>
   <style>
+    /* 적절히 스타일 추가, 필요시 index.html 스타일 복사 */
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       max-width: 900px;
       margin: 40px auto;
       padding: 20px 30px;
@@ -13,348 +14,160 @@
       color: #333;
     }
     h1 {
-      font-weight: 700;
       font-size: 2rem;
-      margin-bottom: 20px;
+      font-weight: 700;
       color: #1a73e8;
+      margin-bottom: 20px;
       text-align: center;
     }
-    button#goToInputBtn {
+    nav a {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-bottom: 30px;
       background-color: #1a73e8;
       color: white;
       font-weight: 600;
-      padding: 10px 18px;
-      border: none;
       border-radius: 6px;
-      cursor: pointer;
+      text-decoration: none;
       transition: background-color 0.3s ease;
-      margin-bottom: 20px;
-      display: inline-block;
     }
-    button#goToInputBtn:hover {
+    nav a:hover {
       background-color: #155ab6;
+    }
+    /* 간단한 메뉴 스타일 */
+    #hitterMenu, #pitcherMenu {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    #hitterMenu li, #pitcherMenu li {
+      padding: 6px 12px;
+      background: #e8f0fe;
+      border-radius: 6px;
+      color: #1a73e8;
+      font-weight: 600;
+    }
+    #hitterMenu li.active, #pitcherMenu li.active {
+      background: #1a73e8;
+      color: white;
     }
     #searchInput {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
+      padding: 10px 12px;
+      font-size: 1rem;
       border-radius: 6px;
       border: 1.5px solid #ccc;
-      font-size: 1rem;
+      margin-bottom: 20px;
     }
-    .container {
-      display: flex;
-      gap: 30px;
-      min-height: 350px;
-      flex-wrap: wrap;
+    #rankingContent table {
+      width: 100%;
+      border-collapse: collapse;
     }
-    nav.menu {
-      width: 180px;
-      background-color: white;
+    #rankingContent th, #rankingContent td {
       border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(26 115 232 / 0.15);
-      overflow-y: auto;
-      padding: 10px 0;
-      flex-shrink: 0;
+      padding: 8px;
+      text-align: center;
     }
-    nav.menu h2 {
-      font-weight: 700;
-      font-size: 1.2rem;
+    #rankingContent th {
+      background-color: #e8f0fe;
       color: #1a73e8;
-      padding: 8px 16px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 10px;
-    }
-    nav.menu ul {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-    }
-    nav.menu li {
-      padding: 10px 16px;
       cursor: pointer;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      font-weight: 600;
-      font-size: 0.95rem;
     }
-    nav.menu li:hover {
-      background-color: #cde0fe;
+    #rankingContent td.player-name {
       color: #1a73e8;
+      text-decoration: underline;
+      cursor: pointer;
     }
-    nav.menu li.active {
-      background-color: #1a73e8;
-      color: white;
+    #recentMvpInfo {
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: #1a73e8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    section.content {
-      flex: 1 1 600px;
-      background-color: white;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      box-shadow: 0 2px 8px rgb(26 115 232 / 0.15);
-      padding: 20px;
-      overflow-x: auto;
-      min-width: 300px;
+    #mvpRankingSection, #teamStatsSection {
+      margin-top: 30px;
     }
-    table {
+    #mvpRankingSection table, #teamStatsSection table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      min-width: 500px;
     }
-    th, td {
+    #mvpRankingSection th, #mvpRankingSection td,
+    #teamStatsSection th, #teamStatsSection td {
       border: 1px solid #ddd;
-      padding: 10px 12px;
+      padding: 8px;
       text-align: center;
-      font-size: 0.95rem;
-      white-space: nowrap;
     }
-    th {
+    #mvpRankingSection th, #teamStatsSection th {
       background-color: #e8f0fe;
       color: #1a73e8;
-      font-weight: 700;
-      user-select: none;
+      font-weight: 600;
     }
-    p.no-data {
-      font-size: 1.1rem;
-      color: #666;
+    .no-data {
       text-align: center;
-      margin-top: 40px;
+      color: #888;
+      font-style: italic;
+      margin-top: 20px;
     }
-    /* 선수 이름 링크 스타일 */
-    td.player-name {
-      color: #1a73e8;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-
-    /* 최근 MVP 표시 섹션 */
-    #recentMvpSection {
-      position: relative;
-      width: 600px;
-      height: 140px;
-      margin: 0 auto 20px auto;
-      background-color: #1b3764;
-      border-radius: 15px;
-      box-shadow:
-        0 0 10px #123663,
-        inset 0 0 20px #2e5ba6;
-      display: flex;
-      align-items: center;
-      padding: 0 30px 0 90px; /* 왼쪽 별 공간 위해 padding-left 넉넉히 */
-      overflow: hidden;
-      user-select: none;
-    }
-    #recentMvpSection::before {
-      content: "★";
-      position: absolute;
-      left: 30px;
-      font-size: 6rem;
-      color: #17438a;
-      opacity: 0.3;
-      filter: drop-shadow(0 0 4px #0f2a55);
-      animation: starGlow 3s infinite ease-in-out;
-      z-index: 1;
-      user-select: none;
-    }
-    @keyframes starGlow {
-      0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 4px #0f2a55); }
-      50% { opacity: 1; filter: drop-shadow(0 0 15px #4aa0ff); }
-    }
-
-    /* MVP 텍스트 스타일 및 애니메이션 */
-    #mvpText {
-      font-weight: 900;
-      font-size: 4.5rem;
-      color: #8a160e;
-      text-shadow:
-        0 0 12px #d64a4a,
-        0 0 25px #d64a4a,
-        0 0 30px #8a160e,
-        0 0 40px #8a160e;
-      margin-right: 20px;
-      animation: mvpPulse 2.5s ease-in-out infinite alternate;
-      z-index: 10;
-      user-select: none;
-      white-space: nowrap;
-    }
-    @keyframes mvpPulse {
-      0% {
-        transform: scale(1) rotate(0deg);
-        text-shadow:
-          0 0 12px #d64a4a,
-          0 0 25px #d64a4a,
-          0 0 30px #8a160e,
-          0 0 40px #8a160e;
-        color: #8a160e;
-      }
-      50% {
-        transform: scale(1.1) rotate(-5deg);
-        text-shadow:
-          0 0 20px #ff7070,
-          0 0 35px #ff7070,
-          0 0 50px #bf1e1e,
-          0 0 60px #bf1e1e;
-        color: #bf1e1e;
-      }
-      100% {
-        transform: scale(1) rotate(0deg);
-        text-shadow:
-          0 0 12px #d64a4a,
-          0 0 25px #d64a4a,
-          0 0 30px #8a160e,
-          0 0 40px #8a160e;
-        color: #8a160e;
-      }
-    }
-
-    /* SPORTS 글씨 스타일 */
-    #sportsBadge {
-      font-size: 1.1rem;
-      font-weight: 600;
-      background: #8a160e;
+    #goToInputBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #1a73e8;
       color: white;
-      border-radius: 12px;
-      padding: 3px 10px;
-      margin-left: 8px;
-      vertical-align: middle;
-      user-select: none;
-      white-space: nowrap;
-      box-shadow:
-        0 0 10px #d64a4a;
-      animation: sportsGlow 2.5s ease-in-out infinite alternate;
-      cursor: default;
-    }
-    @keyframes sportsGlow {
-      0% {
-        box-shadow:
-          0 0 10px #d64a4a;
-        background: #8a160e;
-      }
-      50% {
-        box-shadow:
-          0 0 20px #ff7070;
-        background: #bf1e1e;
-      }
-      100% {
-        box-shadow:
-          0 0 10px #d64a4a;
-        background: #8a160e;
-      }
-    }
-
-    /* 선수 이름 스타일 및 애니메이션 */
-    #playerName {
-      font-weight: 900;
-      font-size: 3.3rem;
-      color: #8a160e;
-      margin-left: 20px;
-      text-shadow:
-        0 0 10px #d64a4a,
-        0 0 20px #bf1e1e;
-      animation: nameGlow 3s ease-in-out infinite alternate;
-      user-select: none;
-      white-space: nowrap;
-      overflow: visible;
-    }
-    @keyframes nameGlow {
-      0% {
-        color: #8a160e;
-        text-shadow:
-          0 0 10px #d64a4a,
-          0 0 20px #bf1e1e;
-      }
-      50% {
-        color: #bf1e1e;
-        text-shadow:
-          0 0 20px #ff7070,
-          0 0 30px #d64a4a,
-          0 0 40px #bf1e1e;
-      }
-      100% {
-        color: #8a160e;
-        text-shadow:
-          0 0 10px #d64a4a,
-          0 0 20px #bf1e1e;
-      }
-    }
-
-    /* 선수 정보 스타일 (팀/타자or투수) */
-    #playerInfo {
-      font-size: 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
       font-weight: 600;
-      color: #eee;
-      margin-left: 25px;
-      user-select: none;
-      text-shadow: 0 0 10px #222;
-      white-space: nowrap;
-      align-self: flex-end;
     }
-
-    /* 나머지 섹션 스타일 유지 */
-    #mvpRankingSection, #teamStatsSection {
-      background: #f0f4ff;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 8px rgb(26 115 232 / 0.15);
-    }
-    #mvpRankingSection h3, #teamStatsSection h3 {
-      color: #1a73e8;
-      margin-bottom: 15px;
-      font-weight: 700;
+    #goToInputBtn:hover {
+      background-color: #155ab6;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <h1>선수 기록 조회 및 순위</h1>
+  <nav>
+    <a href="index.html">선수 기록 입력 페이지로 이동</a>
+  </nav>
 
-  <h1>선수 기록 조회 및 분야별 순위</h1>
+  <!-- 최근 MVP 정보 (필요시 사용) -->
+  <div id="recentMvpInfo"></div>
 
-  <!-- 최근 MVP 표시 영역 -->
-  <div id="recentMvpSection">
-    <div id="mvpText">
-      MVP
-      <span id="sportsBadge">SPORTS</span>
-    </div>
-    <div id="playerName">이원준</div>
-    <div id="playerInfo">(CSIA / 투수)</div>
-  </div>
+  <!-- 타자 통계 메뉴 -->
+  <ul id="hitterMenu">
+    <li data-stat="타율" class="active">타율</li>
+    <li data-stat="홈런">홈런</li>
+    <li data-stat="출루율">출루율</li>
+    <li data-stat="OPS">OPS</li>
+    <li data-stat="타점">타점</li>
+  </ul>
 
-  <button id="goToInputBtn">기록 입력 페이지로 이동</button>
+  <!-- 투수 통계 메뉴 -->
+  <ul id="pitcherMenu">
+    <li data-stat="승리">승리</li>
+    <li data-stat="세이브">세이브</li>
+    <li data-stat="홀드">홀드</li>
+    <li data-stat="삼진">삼진</li>
+    <li data-stat="ERA">ERA</li>
+    <li data-stat="WHIP">WHIP</li>
+  </ul>
 
-  <input type="text" id="searchInput" placeholder="선수 이름 검색" autocomplete="off" />
+  <!-- 선수 검색 -->
+  <input type="text" id="searchInput" placeholder="선수 이름으로 검색" />
 
-  <div class="container">
-    <nav class="menu">
-      <h2>타자 분야</h2>
-      <ul id="hitterMenu">
-        <li data-stat="타율">타율</li>
-        <li data-stat="홈런">홈런</li>
-        <li data-stat="출루율">출루율</li>
-        <li data-stat="OPS">OPS</li>
-        <li data-stat="타점">타점</li>
-      </ul>
+  <!-- 순위 테이블 영역 -->
+  <div id="rankingContent"></div>
 
-      <h2>투수 분야</h2>
-      <ul id="pitcherMenu">
-        <li data-stat="승리">승리</li>
-        <li data-stat="세이브">세이브</li>
-        <li data-stat="홀드">홀드</li>
-        <li data-stat="삼진">삼진</li>
-        <li data-stat="ERA">ERA</li>
-        <li data-stat="WHIP">WHIP</li>
-      </ul>
-    </nav>
-
-    <section class="content" id="rankingContent">
-      <p class="no-data">분야를 선택하세요.</p>
-    </section>
-  </div>
-
-  <!-- MVP 순위표 -->
-  <div id="mvpRankingSection" style="display:none;">
-    <h3>MVP 순위</h3>
-    <table id="mvpRankingTable">
+  <!-- MVP 순위 섹션 -->
+  <section id="mvpRankingSection" style="display:none;">
+    <h2>MVP 순위</h2>
+    <table id="mvpRankingTable" >
       <thead>
         <tr>
           <th>순위</th>
@@ -365,445 +178,28 @@
       </thead>
       <tbody></tbody>
     </table>
-  </div>
+  </section>
 
-  <!-- 팀 통계 -->
-  <div id="teamStatsSection" style="display:none;">
-    <h3>팀별 주요 통계</h3>
+  <!-- 팀별 통계 섹션 -->
+  <section id="teamStatsSection" style="display:none;">
+    <h2>팀별 주요 통계</h2>
     <table id="teamStatsTable">
       <thead>
         <tr>
           <th>팀명</th>
           <th>팀 타율</th>
-          <th>팀 자책점</th>
-          <th>팀 득점</th>
-          <th>팀 타점</th>
-          <th>팀 승률</th>
+          <th>팀 ERA</th>
+          <th>득점</th>
+          <th>타점</th>
+          <th>승률</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
-  </div>
+  </section>
 
-<script>
-  const STORAGE_KEY = 'playersData';
+  <button id="goToInputBtn">선수 기록 입력 페이지로 이동</button>
 
-  // DOM 요소
-  const goToInputBtn = document.getElementById('goToInputBtn');
-  const hitterMenu = document.getElementById('hitterMenu');
-  const pitcherMenu = document.getElementById('pitcherMenu');
-  const rankingContent = document.getElementById('rankingContent');
-  const searchInput = document.getElementById('searchInput');
-  const mvpText = document.getElementById('mvpText');
-  const playerName = document.getElementById('playerName');
-  const playerInfo = document.getElementById('playerInfo');
-
-  const mvpRankingSection = document.getElementById('mvpRankingSection');
-  const mvpRankingTableBody = document.querySelector('#mvpRankingTable tbody');
-
-  const teamStatsSection = document.getElementById('teamStatsSection');
-  const teamStatsTableBody = document.querySelector('#teamStatsTable tbody');
-
-  // 주요 랭킹 스탯
-  const hitterStatsForRanking = ['타율', '홈런', '출루율', 'OPS', '타점'];
-  const pitcherStatsForRanking = ['승리', '세이브', '홀드', '삼진', 'ERA', 'WHIP'];
-
-  let currentSort = { column: null, asc: true };
-
-  // 로컬스토리지에서 선수 데이터 불러오기
-  function loadPlayers() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  }
-
-  // 최근 MVP 불러오기 및 표시
-  function loadRecentMvp() {
-    const mvpData = localStorage.getItem('lastMvp');
-    if (mvpData) {
-      const mvp = JSON.parse(mvpData);
-      mvpText.innerHTML = 'MVP <span id="sportsBadge">SPORTS</span>';
-      playerName.textContent = mvp.name;
-      playerInfo.textContent = `(${mvp.team} / ${mvp.type})`;
-    } else {
-      mvpText.innerHTML = 'MVP <span id="sportsBadge">SPORTS</span>';
-      playerName.textContent = '선택된 MVP가 없습니다.';
-      playerInfo.textContent = '';
-    }
-  }
-
-  // 선수 이름 필터링
-  function filterByName(players, keyword) {
-    if (!keyword) return players;
-    const lower = keyword.toLowerCase();
-    return players.filter(p => p.name.toLowerCase().includes(lower));
-  }
-
-  // 타율 계산
-  function calculateAVG(player) {
-    const H = (player.stats['1루타']||0) + (player.stats['2루타']||0) + (player.stats['3루타']||0) + (player.stats['홈런']||0);
-    const AB = H + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
-    if (AB === 0) return 0;
-    return H / AB;
-  }
-
-  // 출루율 계산
-  function calculateOBP(player) {
-    const H = (player.stats['1루타']||0) + (player.stats['2루타']||0) + (player.stats['3루타']||0) + (player.stats['홈런']||0);
-    const BB = player.stats['볼넷']||0;
-    const HBP = 0;
-    const AB = H + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
-    const SF = player.stats['희생플라이']||0;
-    const denom = AB + BB + HBP + SF;
-    if (denom === 0) return 0;
-    return (H + BB + HBP) / denom;
-  }
-
-  // 장타율 계산
-  function calculateSLG(player) {
-    const doubles = player.stats['2루타']||0;
-    const triples = player.stats['3루타']||0;
-    const HR = player.stats['홈런']||0;
-    const AB = doubles + triples + HR + (player.stats['삼진']||0) + (player.stats['내야땅볼']||0) + (player.stats['플라이아웃']||0);
-    if (AB === 0) return 0;
-    const totalBases = 2*doubles + 3*triples + 4*HR;
-    return totalBases / AB;
-  }
-
-  // OPS 계산
-  function calculateOPS(player) {
-    return calculateOBP(player) + calculateSLG(player);
-  }
-
-  // ERA 계산
-  function calculateERA(player) {
-    const ER = player.stats['자책점']||0;
-    const IP = player.stats['이닝']||0;
-    if (IP === 0) return 0;
-    return (ER * 9) / IP;
-  }
-
-  // WHIP 계산
-  function calculateWHIP(player) {
-    const BB = player.stats['볼넷']||0;
-    const H = player.stats['피안타']||0;
-    const IP = player.stats['이닝']||0;
-    if (IP === 0) return 0;
-    return (BB + H) / IP;
-  }
-
-  // 승률 계산
-  function calculateWinRate(player) {
-    const W = player.stats['승리']||0;
-    const L = player.stats['패배']||0;
-    const total = W + L;
-    if (total === 0) return 0;
-    return W / total;
-  }
-
-  // stat에 따른 선수 필터링
-  function getRankingData(stat) {
-    const players = loadPlayers();
-    if (hitterStatsForRanking.includes(stat)) {
-      return players.filter(p => p.type === '타자');
-    }
-    if (pitcherStatsForRanking.includes(stat)) {
-      return players.filter(p => p.type === '투수');
-    }
-    return [];
-  }
-
-  // stat별 실제 값 계산
-  function getStatValue(player, stat) {
-    switch(stat) {
-      case '타율': return calculateAVG(player);
-      case '출루율': return calculateOBP(player);
-      case 'OPS': return calculateOPS(player);
-      case '홈런': return player.stats['홈런'] || 0;
-      case '타점': return player.stats['타점'] || 0;
-      case '승리': return player.stats['승리'] || 0;
-      case '세이브': return player.stats['세이브'] || 0;
-      case '홀드': return player.stats['홀드'] || 0;
-      case '삼진': return player.stats['삼진'] || 0;
-      case 'ERA': return calculateERA(player);
-      case 'WHIP': return calculateWHIP(player);
-      default: return 0;
-    }
-  }
-
-  // stat별 표기값 (소수점 자리 등)
-  function getStatDisplay(player, stat) {
-    const val = getStatValue(player, stat);
-    if (['타율', '출루율', 'OPS'].includes(stat)) return val.toFixed(3);
-    if (stat === 'ERA') return val.toFixed(2);
-    if (stat === 'WHIP') return val.toFixed(3);
-    if (stat === '승률') return (val * 100).toFixed(1) + '%';
-    return val;
-  }
-
-  // 선수 목록과 stat으로 테이블 생성
-  function createRankingTable(players, stat) {
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const tbody = document.createElement('tbody');
-
-    // 헤더 행
-    const headerRow = document.createElement('tr');
-    ['순위', '선수명', stat].forEach((text, idx) => {
-      const th = document.createElement('th');
-      th.textContent = text;
-      if (idx === 2) {
-        th.style.cursor = 'pointer';
-        th.addEventListener('click', () => {
-          if (currentSort.column === stat) currentSort.asc = !currentSort.asc;
-          else {
-            currentSort.column = stat;
-            currentSort.asc = true;
-          }
-          renderRanking(stat, currentSort.asc);
-        });
-        if (currentSort.column === stat) {
-          th.textContent += currentSort.asc ? ' ▲' : ' ▼';
-        }
-      }
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-
-    // 선수 데이터 행
-    players.forEach((player, idx) => {
-      const tr = document.createElement('tr');
-
-      const rankTd = document.createElement('td');
-      rankTd.textContent = idx + 1;
-      tr.appendChild(rankTd);
-
-      const nameTd = document.createElement('td');
-      nameTd.textContent = player.name;
-      nameTd.classList.add('player-name');
-      nameTd.style.cursor = 'pointer';
-      nameTd.style.color = '#1a73e8';
-      nameTd.style.textDecoration = 'underline';
-      // 클릭 시 타입도 같이 전달하여 player_detail.html에서 구분 가능하게 함
-      nameTd.addEventListener('click', () => {
-        window.location.href = `player_detail.html?name=${encodeURIComponent(player.name)}&type=${encodeURIComponent(player.type)}`;
-      });
-      tr.appendChild(nameTd);
-
-      const statTd = document.createElement('td');
-      statTd.textContent = getStatDisplay(player, stat);
-      tr.appendChild(statTd);
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(thead);
-    table.appendChild(tbody);
-    return table;
-  }
-
-  // MVP 순위 테이블 생성 및 표시
-  function renderMvpRanking() {
-    const players = loadPlayers().filter(p => p.mvpCount && p.mvpCount > 0);
-    if (players.length === 0) {
-      mvpRankingSection.style.display = 'none';
-      return;
-    }
-    mvpRankingSection.style.display = 'block';
-
-    // 이름 기준으로 투수, 타자 합산 MVP 횟수 계산
-    const mvpMap = {};
-    players.forEach(p => {
-      if (mvpMap[p.name]) {
-        mvpMap[p.name].mvpCount += p.mvpCount;
-        if (!mvpMap[p.name].types.includes(p.type)) {
-          mvpMap[p.name].types.push(p.type);
-        }
-        if (!mvpMap[p.name].teams.includes(p.team)) {
-          mvpMap[p.name].teams.push(p.team);
-        }
-      } else {
-        mvpMap[p.name] = {
-          name: p.name,
-          mvpCount: p.mvpCount,
-          teams: [p.team],
-          types: [p.type]
-        };
-      }
-    });
-
-    // 합산된 데이터를 배열로 변환 후 내림차순 정렬
-    const aggregatedPlayers = Object.values(mvpMap).sort((a, b) => b.mvpCount - a.mvpCount);
-
-    mvpRankingTableBody.innerHTML = '';
-
-    aggregatedPlayers.forEach((p, idx) => {
-      const tr = document.createElement('tr');
-
-      const rankTd = document.createElement('td');
-      rankTd.textContent = idx + 1;
-      tr.appendChild(rankTd);
-
-      const nameTd = document.createElement('td');
-      nameTd.textContent = p.name;
-      nameTd.classList.add('player-name');
-      nameTd.style.cursor = 'pointer';
-      nameTd.style.color = '#1a73e8';
-      nameTd.style.textDecoration = 'underline';
-      nameTd.addEventListener('click', () => {
-        // 타입 정보 중 첫번째 타입만 넘김 (필요 시 확장 가능)
-        window.location.href = `player_detail.html?name=${encodeURIComponent(p.name)}&type=${encodeURIComponent(p.types[0])}`;
-      });
-      tr.appendChild(nameTd);
-
-      const teamTd = document.createElement('td');
-      // 팀이 여러 개면 ,로 연결
-      teamTd.textContent = p.teams.join(', ');
-      tr.appendChild(teamTd);
-
-      const mvpTd = document.createElement('td');
-      mvpTd.textContent = p.mvpCount;
-      tr.appendChild(mvpTd);
-
-      mvpRankingTableBody.appendChild(tr);
-    });
-  }
-
-  // 팀별 주요 통계 계산 및 테이블 생성
-  function calculateTeamStats() {
-    const players = loadPlayers();
-
-    const teams = {};
-
-    players.forEach(p => {
-      if (!teams[p.team]) {
-        teams[p.team] = {
-          totalHits: 0, totalAtBats: 0,
-          totalER: 0, totalInnings: 0,
-          totalRuns: 0, totalRBI: 0,
-          totalWins: 0, totalLosses: 0,
-          playerCount: 0
-        };
-      }
-
-      const team = teams[p.team];
-
-      if (p.type === '타자') {
-        const hits = (p.stats['1루타']||0) + (p.stats['2루타']||0) + (p.stats['3루타']||0) + (p.stats['홈런']||0);
-        const atBats = hits + (p.stats['삼진']||0) + (p.stats['내야땅볼']||0) + (p.stats['플라이아웃']||0);
-        team.totalHits += hits;
-        team.totalAtBats += atBats;
-        team.totalRuns += p.stats['득점'] || 0;
-        team.totalRBI += p.stats['타점'] || 0;
-      }
-
-      if (p.type === '투수') {
-        team.totalER += p.stats['자책점'] || 0;
-        team.totalInnings += p.stats['이닝'] || 0;
-        team.totalWins += p.stats['승리'] || 0;
-        team.totalLosses += p.stats['패배'] || 0;
-      }
-
-      team.playerCount++;
-    });
-
-    const tbody = teamStatsTableBody;
-    tbody.innerHTML = '';
-
-    for (const teamName in teams) {
-      const t = teams[teamName];
-      const teamAVG = t.totalAtBats > 0 ? (t.totalHits / t.totalAtBats) : 0;
-      const teamERA = t.totalInnings > 0 ? (t.totalER * 9 / t.totalInnings) : 0;
-      const teamWinRate = (t.totalWins + t.totalLosses) > 0 ? (t.totalWins / (t.totalWins + t.totalLosses)) : 0;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${teamName}</td>
-        <td>${teamAVG.toFixed(3)}</td>
-        <td>${teamERA.toFixed(2)}</td>
-        <td>${t.totalRuns}</td>
-        <td>${t.totalRBI}</td>
-        <td>${(teamWinRate * 100).toFixed(1)}%</td>
-      `;
-      tbody.appendChild(tr);
-    };
-
-    teamStatsSection.style.display = Object.keys(teams).length > 0 ? 'block' : 'none';
-  }
-
-  // 초기 로딩 시 최근 MVP 정보 표시 및 데이터 렌더링
-  document.addEventListener('DOMContentLoaded', () => {
-    loadRecentMvp();
-    renderMvpRanking();
-    calculateTeamStats();
-  });
-
-  goToInputBtn.addEventListener('click', () => {
-    const password = prompt('기록 입력 페이지 접근을 위한 암호를 입력하세요.');
-    if (password === 'Leaders0903') {
-      window.location.href = 'index.html';
-    } else {
-      alert('암호가 틀렸습니다.');
-    }
-  });
-
-  function clearActiveMenu() {
-    [...hitterMenu.children].forEach(li => li.classList.remove('active'));
-    [...pitcherMenu.children].forEach(li => li.classList.remove('active'));
-  }
-
-  hitterMenu.addEventListener('click', e => {
-    if (e.target.tagName === 'LI') {
-      clearActiveMenu();
-      e.target.classList.add('active');
-      currentSort.column = e.target.getAttribute('data-stat');
-      currentSort.asc = true;
-      searchInput.value = '';
-      renderRanking(currentSort.column, currentSort.asc);
-    }
-  });
-
-  pitcherMenu.addEventListener('click', e => {
-    if (e.target.tagName === 'LI') {
-      clearActiveMenu();
-      e.target.classList.add('active');
-      currentSort.column = e.target.getAttribute('data-stat');
-      currentSort.asc = true;
-      searchInput.value = '';
-      renderRanking(currentSort.column, currentSort.asc);
-    }
-  });
-
-  searchInput.addEventListener('input', () => {
-    if (!currentSort.column) return;
-    renderRanking(currentSort.column, currentSort.asc);
-  });
-
-  // 주요 순위 렌더링 함수
-  function renderRanking(stat, asc = true) {
-    rankingContent.innerHTML = '';
-    let players = getRankingData(stat);
-
-    // 선수 이름 검색 필터
-    const keyword = searchInput.value.trim();
-    players = filterByName(players, keyword);
-
-    // 정렬 적용
-    players = players.sort((a, b) => {
-      const valA = getStatValue(a, stat);
-      const valB = getStatValue(b, stat);
-      if (valA < valB) return asc ? -1 : 1;
-      if (valA > valB) return asc ? 1 : -1;
-      return 0;
-    });
-
-    if (players.length === 0) {
-      rankingContent.innerHTML = '<p class="no-data">선수 기록이 없습니다.</p>';
-      return;
-    }
-
-    rankingContent.appendChild(createRankingTable(players, stat));
-  }
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
