@@ -45,7 +45,9 @@ function renderPlayerList(players) {
     container.style.padding = '10px';
     container.style.overflowX = 'auto';
 
-    let html = `<h3>${player.name} (${player.team} / ${player.type}) <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button></h3>`;
+    let html = `<h3>${player.name} (${player.team} / ${player.type}) 
+      <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button>
+    </h3>`;
     html += '<table><thead><tr>';
 
     statKeys.forEach(stat => {
@@ -62,15 +64,15 @@ function renderPlayerList(players) {
     });
 
     html += `<td class="buttons-cell">
-      <button class="stat-btn" data-idx="${idx}" data-stat="mvpcount" data-delta="1">&#x25B2;</button>
-      <button class="stat-btn" data-idx="${idx}" data-stat="mvpcount" data-delta="-1">&#x25BC;</button>
+      <button class="stat-btn" data-idx="${idx}" data-stat="mvpCount" data-delta="1">&#x25B2;</button>
+      <button class="stat-btn" data-idx="${idx}" data-stat="mvpCount" data-delta="-1">&#x25BC;</button>
     </td></tr><tr>`;
 
     // 스탯 값 행
     statKeys.forEach(stat => {
       html += `<td>${player[stat] || 0}</td>`;
     });
-    html += `<td>${player.mvpcount || 0}</td>`;
+    html += `<td>${player.mvpCount || 0}</td>`;
     html += '</tr></tbody></table>';
 
     container.innerHTML = html;
@@ -129,10 +131,10 @@ function bindIndexPageEvents() {
         hitterStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {}) :
         pitcherStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {});
 
-      const newPlayer = { name, type, team, ...stats, mvpcount: 0 };
+      const newPlayer = { name, type, team, ...stats, mvpCount: 0 };
 
       // Supabase에 선수 추가
-      const { data, error } = await supabase.from('players').insert([newPlayer]);
+      const { error } = await supabase.from('players').insert([newPlayer]);
       if (error) {
         alert('선수 추가 중 오류 발생: ' + error.message);
         console.error(error);
@@ -214,10 +216,10 @@ function bindIndexPageEvents() {
         return;
       }
 
-      const newMvpCount = (players[idx].mvpcount || 0) + 1;
+      const newMvpCount = (players[idx].mvpCount || 0) + 1;
 
       // Supabase에 MVP count 업데이트
-      supabase.from('players').update({ mvpcount: newMvpCount }).eq('id', players[idx].id)
+      supabase.from('players').update({ mvpCount: newMvpCount }).eq('id', players[idx].id)
         .then(({ error }) => {
           if (error) {
             alert('MVP 업데이트 중 오류 발생: ' + error.message);
@@ -225,9 +227,9 @@ function bindIndexPageEvents() {
             return;
           }
 
-          players[idx].mvpcount = newMvpCount;
+          players[idx].mvpCount = newMvpCount;
           renderPlayerList(players);
-          mvpMessage.textContent = `${players[idx].name} 선수가 MVP로 선정되었습니다! (총 ${players[idx].mvpcount}회)`;
+          mvpMessage.textContent = `${players[idx].name} 선수가 MVP로 선정되었습니다! (총 ${players[idx].mvpCount}회)`;
           mvpSelect.value = '';
         });
     });
