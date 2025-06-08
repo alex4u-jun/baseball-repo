@@ -343,24 +343,6 @@ function calculateTeamStats() {
   teamStatsSection.style.display = Object.keys(teams).length > 0 ? 'block' : 'none';
 }
 
-// 선수 데이터 JSON 파일로 내보내기
-function exportPlayersToJson() {
-  const players = loadPlayers();
-  const dataStr = JSON.stringify(players, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'players.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-document.getElementById('exportPlayersBtn').addEventListener('click', exportPlayersToJson);
-
 // 초기 로딩 시 최근 MVP 정보 표시 및 데이터 렌더링
 document.addEventListener('DOMContentLoaded', () => {
   loadRecentMvp();

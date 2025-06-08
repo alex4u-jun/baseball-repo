@@ -7,7 +7,7 @@
     body {
       font-family: Arial, sans-serif;
       max-width: 900px;
-      margin: 40px auto       ;
+      margin: 40px autos;
       padding: 20px 30px;
       background-color: #f9faff;
       color: #333;
@@ -329,8 +329,6 @@
     <p id="mvpMessage" class="mvp-message"></p>
   </div>
 
-  <button id="exportPlayersBtn" style="margin-bottom:20px;">선수 데이터 내보내기 (JSON)</button>
-
 <script>
   const STORAGE_KEY = 'playersData';
   let players = [];
@@ -612,18 +610,6 @@
     }
     savePlayers(players);
     alert(`대결 기록이 저장되었습니다:\n투수: ${selectedPitcher.name}\n타자: ${selectedHitter.name}`);
-  });
-
-  // 선수 데이터 내보내기 (JSON)
-  document.getElementById('exportPlayersBtn').addEventListener('click', () => {
-    const json = JSON.stringify(players, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'playersData.json';
-    a.click();
-    URL.revokeObjectURL(url);
   });
 
   init();
