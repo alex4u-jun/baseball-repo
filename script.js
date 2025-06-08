@@ -90,6 +90,20 @@ function updateMvpSelect(players) {
   });
 }
 
+// Supabase에 선수 데이터 업데이트 함수
+async function updatePlayerOnSupabase(player) {
+  if (!player.id) return;
+  const { error } = await supabase.from('players').update(player).eq('id', player.id);
+  if (error) console.error('선수 업데이트 오류:', error);
+}
+
+// Supabase에 선수 삭제 함수
+async function deletePlayerOnSupabase(playerId) {
+  if (!playerId) return;
+  const { error } = await supabase.from('players').delete().eq('id', playerId);
+  if (error) console.error('선수 삭제 오류:', error);
+}
+
 // index.html 이벤트 바인딩
 function bindIndexPageEvents(players) {
   const addPlayerForm = document.getElementById('addPlayerForm');
@@ -130,15 +144,16 @@ function bindIndexPageEvents(players) {
       const newPlayer = { name, type, team, ...stats, mvpcount: 0 };
 
       // Supabase에 추가
-      const { error } = await supabase.from('players').insert([newPlayer]);
-
+      const { data, error } = await supabase.from('players').insert([newPlayer]);
       if (error) {
         alert('선수 추가 중 오류 발생: ' + error.message);
         console.error(error);
         return;
       }
 
-      players.push(newPlayer);
+      // 새로 추가된 선수의 id 포함 데이터 가져오기
+      const insertedPlayer = data[0];
+      players.push(insertedPlayer);
       renderPlayerList(players);
       addPlayerForm.reset();
     });
@@ -150,17 +165,18 @@ function bindIndexPageEvents(players) {
     playerListDiv.addEventListener('click', async e => {
       const target = e.target;
       if (!target) return;
+
       if (target.classList.contains('delete-btn')) {
         const idx = parseInt(target.dataset.idx);
         if (isNaN(idx)) return;
         if (!confirm(`${players[idx].name} 선수를 삭제하시겠습니까?`)) return;
 
-        // Supabase에서 삭제 시 id 필요. 실제 삭제 쿼리 추가 권장
-        // 예:
-        // await supabase.from('players').delete().eq('id', players[idx].id);
+        // Supabase에서 삭제
+        await deletePlayerOnSupabase(players[idx].id);
 
         players.splice(idx, 1);
         renderPlayerList(players);
+
       } else if (target.classList.contains('stat-btn')) {
         const idx = parseInt(target.dataset.idx);
         const stat = target.dataset.stat;
@@ -176,6 +192,10 @@ function bindIndexPageEvents(players) {
           if (newVal < 0) return;
           players[idx][stat] = newVal;
         }
+
+        // Supabase에 업데이트 반영
+        await updatePlayerOnSupabase(players[idx]);
+
         renderPlayerList(players);
       }
     });
@@ -194,6 +214,7 @@ function bindIndexPageEvents(players) {
         return;
       }
       players[idx].mvpcount = (players[idx].mvpcount || 0) + 1;
+      updatePlayerOnSupabase(players[idx]);
       renderPlayerList(players);
       mvpMessage.textContent = `${players[idx].name} 선수가 MVP로 선정되었습니다! (총 ${players[idx].mvpcount}회)`;
       mvpSelect.value = '';
