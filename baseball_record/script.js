@@ -27,6 +27,16 @@ function renderPlayerList(players) {
     return;
   }
 
+  // 타자, 투수 스탯 분리
+  const hitterStats = [
+    "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
+    "희생플라이", "내야땅볼", "플라이아웃", "타점"
+  ];
+  const pitcherStats = [
+    "투구수", "피안타", "피홈런", "자책점", "이닝",
+    "승리", "패배", "홀드", "세이브", "사구"
+  ];
+
   players.forEach((player, idx) => {
     const container = document.createElement('div');
     container.style.border = '1px solid #ccc';
@@ -34,18 +44,11 @@ function renderPlayerList(players) {
     container.style.padding = '10px';
     container.style.overflowX = 'auto';
 
-    // 플레이어 타입에 따라 보여줄 스탯 컬럼 구분
-    const hitterStats = [
-      "1루타", "2루타", "3루타", "홈런", "삼진", "볼넷",
-      "희생플라이", "내야땅볼", "플라이아웃", "타점"
-    ];
-    const pitcherStats = [
-      "투구수", "피안타", "피홈런", "자책점", "이닝",
-      "승리", "패배", "홀드", "세이브", "사구"
-    ];
+    // type 값에서 앞뒤 공백 제거 후 비교
+    const playerType = player.type.trim();
 
-    // 플레이어 타입에 맞는 컬럼만 선택
-    const statKeys = (player.type === '타자') ? hitterStats : pitcherStats;
+    // 타입에 따라 스탯 키 선택
+    const statKeys = (playerType === '타자') ? hitterStats : pitcherStats;
 
     let html = `<h3>${player.name} (${player.team} / ${player.type}) <button class="delete-btn" data-idx="${idx}" style="color:#e53935; background:none; border:none; cursor:pointer;">삭제</button></h3>`;
     html += '<table><thead><tr>';
@@ -142,7 +145,7 @@ function bindIndexPageEvents() {
         return;
       }
 
-      // 데이터 다시 불러오기 및 렌더링
+      // 선수 데이터 다시 불러오기 및 렌더링
       players = await loadPlayersFromSupabase();
       renderPlayerList(players);
       addPlayerForm.reset();
@@ -253,9 +256,10 @@ function bindIndexPageEvents() {
   }
 }
 
-// DOMContentLoaded 이벤트에서 초기화 및 이벤트 바인딩
+// DOMContentLoaded 이벤트 핸들러
 document.addEventListener('DOMContentLoaded', async () => {
   players = await loadPlayersFromSupabase();
+
   renderPlayerList(players);
   bindIndexPageEvents();
 });
