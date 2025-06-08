@@ -9,7 +9,7 @@ let players = [];  // 선수 전체 데이터 저장
 async function loadPlayersFromSupabase() {
   const { data, error } = await supabase.from('players').select('*').order('id', { ascending: true });
   if (error) {
-    console.error('선수 데이터 불러오기 실패:', error);
+    console.error('선수 데이터 불러오기 실패:', error.message || error);
     return [];
   }
   return data || [];
@@ -112,7 +112,6 @@ function bindIndexPageEvents() {
         return;
       }
 
-      // 기본 스탯 초기화
       const hitterStatsHeaders = [
         '1루타', '2루타', '3루타', '홈런', '삼진', '볼넷',
         '희생플라이', '내야땅볼', '플라이아웃', '타점'
@@ -136,7 +135,7 @@ function bindIndexPageEvents() {
         return;
       }
 
-      // 데이터 다시 불러오기 및 렌더링
+      // 선수 데이터 다시 불러와서 렌더링
       players = await loadPlayersFromSupabase();
       renderPlayerList(players);
       addPlayerForm.reset();
