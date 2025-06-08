@@ -358,34 +358,60 @@
     renderPlayerList();
   }
 
-  document.getElementById('addPlayerForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = document.getElementById('playerName').value.trim();
-    const type = document.getElementById('playerType').value;
-    const team = document.getElementById('playerTeam').value;
+  // Supabase 연결 (index.html <script> 내에 추가)
+const SUPABASE_URL = 'https://<your-project-id>.supabase.co'; // 본인 프로젝트 URL로 변경
+const SUPABASE_ANON_KEY = '<your-anon-key>'; // 본인 프로젝트 anon key로 변경
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    if (!name) {
-      alert('선수 이름을 입력하세요.');
-      return;
-    }
-    if (!team) {
-      alert('팀을 선택하세요.');
-      return;
-    }
-    if (players.some(p => p.name === name && p.type === type)) {
-      alert('이미 등록된 선수입니다.');
-      return;
-    }
+// 선수 추가 시 Supabase에 저장
+async function addPlayerToSupabase(player) {
+  // stats 객체를 컬럼으로 펼쳐서 insert
+  const insertData = {
+    name: player.name,
+    type: player.type,
+    team: player.team,
+    mvpCount: player.mvpCount || 0,
+    ...player.stats // stats의 각 기록을 컬럼으로 분해
+  };
+  const { error } = await supabase.from('players').insert([insertData]);
+  if (error) {
+    alert('Supabase 저장 오류: ' + error.message);
+  }
+}
 
-    const stats = (type === '타자') ?
-      hitterStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {}) :
-      pitcherStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {});
+// 기존 addPlayerForm submit 이벤트 수정
+document.getElementById('addPlayerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('playerName').value.trim();
+  const type = document.getElementById('playerType').value;
+  const team = document.getElementById('playerTeam').value;
 
-    players.push({ name, type, team, stats, mvpCount: 0 });
-    savePlayers(players);
-    renderPlayerList();
-    e.target.reset();
-  });
+  if (!name) {
+    alert('선수 이름을 입력하세요.');
+    return;
+  }
+  if (!team) {
+    alert('팀을 선택하세요.');
+    return;
+  }
+  if (players.some(p => p.name === name && p.type === type)) {
+    alert('이미 등록된 선수입니다.');
+    return;
+  }
+
+  const stats = (type === '타자') ?
+    hitterStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {}) :
+    pitcherStatsHeaders.reduce((acc, cur) => { acc[cur] = 0; return acc; }, {});
+
+  const newPlayer = { name, type, team, stats, mvpCount: 0 };
+  players.push(newPlayer);
+  savePlayers(players);
+  renderPlayerList();
+  e.target.reset();
+
+  // Supabase에도 저장
+  await addPlayerToSupabase(newPlayer);
+});
 
   const playerListDiv = document.getElementById('playerList');
   playerListDiv.addEventListener('click', e => {
