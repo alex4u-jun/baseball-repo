@@ -116,8 +116,8 @@ function calculateWinRate(player) {
 }
 
 // stat에 따른 선수 필터링
-function getRankingData(stat) {
-  const players = loadPlayers();
+async function getRankingData(stat) {
+  const players = await loadPlayersFromSupabase();
   if (hitterStatsForRanking.includes(stat)) {
     return players.filter(p => p.type === '타자');
   }
@@ -217,9 +217,9 @@ function createRankingTable(players, stat) {
 }
 
 // 순위 렌더링 함수
-function renderRanking(stat, asc = true) {
+async function renderRanking(stat, asc = true) {
   rankingContent.innerHTML = '';
-  let players = getRankingData(stat);
+  let players = await loadPlayersFromSupabase();
 
   // 선수 이름 검색 필터
   const keyword = searchInput.value.trim();
@@ -295,8 +295,8 @@ async function renderMvpRanking() {
 }
 
 // 팀별 주요 통계 계산 및 테이블 생성
-function calculateTeamStats() {
-  const players = loadPlayers();
+async function calculateTeamStats() {
+  const players = await loadPlayersFromSupabase();
 
   const teams = {};
 
@@ -364,11 +364,13 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 선수 데이터 불러오기 (Supabase)
 async function loadPlayersFromSupabase() {
+  console.log('Supabase에서 선수 데이터를 불러옵니다...');
   const { data, error } = await supabase.from('players').select('*');
   if (error) {
-    console.error('불러오기 오류:', error);
+    console.error('Supabase 불러오기 오류:', error);
     return [];
   }
+  console.log('Supabase에서 선수 데이터를 성공적으로 불러왔습니다:', data);
   return data;
 }
 
@@ -376,24 +378,46 @@ async function loadPlayersFromSupabase() {
 
 // 선수 추가 예시
 async function addPlayer(newPlayer) {
-  const { error } = await supabase.from('players').insert([newPlayer]);
+  console.log('Supabase에 새 선수를 추가합니다:', newPlayer);
+  const { data, error } = await supabase.from('players').insert([newPlayer]).select();
   if (error) {
-    console.error('선수 추가 오류:', error);
+    console.error('Supabase 선수 추가 오류:', error);
+  } else {
+    console.log('Supabase에 선수를 성공적으로 추가했습니다:', data);
   }
 }
 
 // 선수 기록 수정 예시
-function updatePlayer(updatedPlayer) {
-  let players = loadPlayers();
-  players = players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
-  savePlayers(players); // 저장 + 자동 다운로드
+async function updatePlayer(updatedPlayer) {
+  const { id, ...updateData } = updatedPlayer;
+  console.log(`Supabase에서 ID가 ${id}인 선수를 업데이트합니다:`, updateData);
+  const { data, error } = await supabase
+    .from('players')
+    .update(updateData)
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error('Supabase 선수 업데이트 오류:', error);
+  } else {
+    console.log('Supabase에서 선수를 성공적으로 업데이트했습니다:', data);
+  }
 }
 
 // 선수 삭제 예시
-function deletePlayer(playerId) {
-  let players = loadPlayers();
-  players = players.filter(p => p.id !== playerId);
-  savePlayers(players); // 저장 + 자동 다운로드
+async function deletePlayer(playerId) {
+  console.log(`Supabase에서 ID가 ${playerId}인 선수를 삭제합니다.`);
+  const { data, error } = await supabase
+    .from('players')
+    .delete()
+    .eq('id', playerId)
+    .select();
+
+  if (error) {
+    console.error('Supabase 선수 삭제 오류:', error);
+  } else {
+    console.log('Supabase에서 선수를 성공적으로 삭제했습니다:', data);
+  }
 }
 
 // 선수 데이터 불러오기 및 화면 반영
@@ -402,7 +426,6 @@ async function loadAndRenderPlayers() {
   // players로 화면 렌더링 함수 호출
 }
 
-document.getElementById('exportPlayersBtn').addEventListener('click', exportPlayersToJson);
 
 // 초기 로딩 시 최근 MVP 정보 표시 및 데이터 렌더링
 document.addEventListener('DOMContentLoaded', () => {
