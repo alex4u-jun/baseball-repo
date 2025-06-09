@@ -1,288 +1,56 @@
 body {
   font-family: Arial, sans-serif;
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px 30px;
-  background-color: #f9faff;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+  background: #f9f9f9;
   color: #333;
-  overflow-x: auto;
 }
 
-h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a73e8;
-  margin-bottom: 30px;
+header {
   text-align: center;
+  margin-bottom: 20px;
 }
 
-nav a {
-  display: inline-block;
-  padding: 10px 20px;
-  margin-bottom: 30px;
-  background-color: #1a73e8;
-  color: white;
-  font-weight: 600;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-}
-
-nav a:hover {
-  background-color: #155ab6;
-}
-
-form {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-}
-
-input[type="text"], select {
-  padding: 10px 12px;
+input, select, button {
+  padding: 5px;
+  margin: 5px 0;
   font-size: 1rem;
-  border: 1.5px solid #ccc;
-  border-radius: 6px;
-  transition: border-color 0.3s ease;
-  width: 180px;
-  min-width: 150px;
-}
-
-input[type="text"]:focus, select:focus {
-  border-color: #1a73e8;
-  outline: none;
 }
 
 button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  background-color: #1a73e8;
-  color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
 }
 
-button:hover {
-  background-color: #155ab6;
+ul#playerList {
+  list-style: none;
+  padding: 0;
 }
 
-.player-list > div {
-  background-color: white;
+ul#playerList li {
+  margin: 8px 0;
+  padding: 8px;
+  background: #fff;
   border: 1px solid #ddd;
-  padding: 16px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgb(26 115 232 / 0.15);
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.player-list h3 {
-  font-weight: 700;
-  color: #1a73e8;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.delete-btn {
-  color: #e53935;
-  font-size: 14px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-  background: none;
-  border: none;
   cursor: pointer;
 }
 
-.delete-btn:hover {
-  background-color: #e5393533;
+ul#playerList li:hover {
+  background: #eee;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  min-width: 900px;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  text-align: center;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  padding: 8px 6px;
-  vertical-align: middle;
-}
-
-th {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-  font-weight: 600;
-  user-select: none;
-}
-
-td.buttons-cell {
-  padding: 4px 6px;
-}
-
-button.stat-btn {
-  width: 24px;
-  height: 24px;
-  font-size: 16px;
-  line-height: 1;
-  padding: 0;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #f1f3f4;
-  cursor: pointer;
-  margin: 0 2px;
-  user-select: none;
-  transition: background-color 0.3s ease;
-}
-
-button.stat-btn:hover {
-  background-color: #cde0fe;
-}
-
-.duel-section {
-  background-color: white;
-  padding: 20px 25px;
-  border-radius: 10px;
-  margin-top: 50px;
-  box-shadow: 0 4px 10px rgb(26 115 232 / 0.1);
-  overflow-x: auto;
-}
-
-.duel-section h2 {
-  color: #1a73e8;
-  font-weight: 700;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-}
-
-.duel-section h3 {
-  margin-bottom: 12px;
-  color: #3c4043;
-  font-weight: 600;
-}
-
-#pitcherSearch, #hitterSearch {
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1.5px solid #ccc;
-  font-size: 1rem;
-}
-
-#pitcherSearchResults div, #hitterSearchResults div {
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  background-color: #f1f3f4;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#pitcherSearchResults div:hover, #hitterSearchResults div:hover {
-  background-color: #cde0fe;
-}
-
-#pitcherEditSection, #hitterEditSection {
-  background-color: #f9fbff;
-  border: 1px solid #cde0fe;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-top: 8px;
-}
-
-#pitcherNameDisplay, #hitterNameDisplay {
-  font-weight: 700;
-  color: #1a73e8;
-  margin-bottom: 12px;
-}
-
-#pitcherStatsContainer div, #hitterStatsContainer div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-#pitcherStatsContainer label, #hitterStatsContainer label {
-  min-width: 100px;
-  font-weight: 600;
-  color: #3c4043;
-}
-
-.mvp-section {
-  margin-top: 40px;
-  background:#f0f4ff;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.mvp-section h2 {
-  color:#1a73e8;
-  margin-bottom: 12px;
-}
-
-.mvp-section select {
   padding: 8px;
-  border-radius: 6px;
-  border: 1.5px solid #ccc;
-  font-size: 1rem;
-  min-width: 240px;
-}
-
-.mvp-section button {
-  margin-left: 12px;
-  padding: 8px 20px;
-  background:#1a73e8;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight: 600;
-}
-
-.mvp-section button:hover {
-  background:#155ab6;
-}
-
-.mvp-message {
-  margin-top: 10px;
-  font-weight: 600;
-  color: #155ab6;
-}
-
-/* MVP 횟수 셀 - 위쪽 선 제거 */
-td.mvp-count-cell {
-  border-top: none !important;
-  vertical-align: middle;
   text-align: center;
 }
 
-/* 화살표 버튼 2개를 같은 X축으로 정렬 */
-.arrow-buttons {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.arrow-buttons button {
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  font-size: 14px;
+a {
+  color: blue;
+  text-decoration: underline;
 }
